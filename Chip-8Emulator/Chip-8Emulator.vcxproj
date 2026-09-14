@@ -147,12 +147,14 @@
     <ClCompile Include="Interpreter.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Memory.cpp" />
+    <ClCompile Include="Platform.cpp" />
     <ClCompile Include="ReadROM.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Chip8.h" />
     <ClInclude Include="Memory.h" />
     <ClInclude Include="Opcodes.h" />
+    <ClInclude Include="Platform.h" />
     <ClInclude Include="Registers.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

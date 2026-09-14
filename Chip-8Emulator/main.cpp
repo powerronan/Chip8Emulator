@@ -1,41 +1,63 @@
-#include <SDL2/SDL.h>
-#include <cstdio>
+#include "Chip8.h"
+#include "Platform.h"
+#include <chrono>
+#include <cstdlib>
+#include <iostream>
+#include <string>
 
 int main(int argc, char* argv[])
 {
+    if (argc != 4)
+    {
+        std::cerr << "Usage: " << argv[0]
+            << " <Scale> <Delay> <ROM>\n";
+        return EXIT_FAILURE;
+    }
 
-	SDL_Window* screen = NULL;
+    constexpr int VIDEO_WIDTH = 64;
+    constexpr int VIDEO_HEIGHT = 32;
 
-	if (SDL_Init(SDL_INIT_VIDEO) < 0)
-	{
-		printf("SDL Error: %s\n", SDL_GetError());
-	}
-	else
-	{
-		screen = SDL_CreateWindow("Test", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 600, 600, SDL_WINDOW_SHOWN);
+    int videoScale = std::stoi(argv[1]);
+    int cycleDelay = std::stoi(argv[2]);
+    char const* romFilename = argv[3];
 
-		if (!screen)
-		{
-			printf("SDL_Window error: %s\n", SDL_GetError());
-		}
-		else
-		{
-			SDL_Surface* screenSurface = SDL_GetWindowSurface(screen);
+    Platform platform(
+        "CHIP-8 Emulator",
+        VIDEO_WIDTH * videoScale,
+        VIDEO_HEIGHT * videoScale,
+        VIDEO_WIDTH,
+        VIDEO_HEIGHT
+    );
 
-			SDL_FillRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0xFF, 0xFF, 0xFF));
+    Chip8 chip8;
+    chip8.openRom(romFilename);
 
-			SDL_UpdateWindowSurface(screen);
+    int videoPitch =
+        sizeof(chip8.registers.video[0]) * VIDEO_WIDTH;
 
-			SDL_Event e; bool quit = false; while (quit == false) { while (SDL_PollEvent(&e)) { if (e.type == SDL_QUIT) quit = true; } }
-		}
+    auto lastCycleTime = std::chrono::steady_clock::now();
+    bool quit = false;
 
+    while (!quit)
+    {
+        quit = platform.ProcessInput(chip8.registers.keys);
 
-	}
-	SDL_DestroyWindow(screen);
+        if (quit)
+            break;
 
-	SDL_Quit();
+        auto currentTime = std::chrono::steady_clock::now();
+        float dt = std::chrono::duration<float, std::milli>(
+            currentTime - lastCycleTime
+        ).count();
 
-	return 0;
+        if (dt >= cycleDelay)
+        {
+            lastCycleTime = currentTime;
+
+            chip8.Cycle();
+            platform.Update(chip8.registers.video, videoPitch);
+        }
+    }
+
+    return 0;
 }
-
-

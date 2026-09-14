@@ -3,7 +3,7 @@
 
 class Memory {
 public:
-    static const std::uint16_t MEM_SIZE = 0xFFF;
+    static const std::uint16_t MEM_SIZE = 0x1000;
     const std::uint16_t INTERP_OFFSET = 0x200;
     const std::uint16_t FONT_SIZE_START = 0x50;
 
